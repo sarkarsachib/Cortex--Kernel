@@ -1,0 +1,28 @@
+[build]
+target = "x86_64-cortex-kernel.json"
+
+[target.x86_64-cortex-kernel]
+rustflags = [
+    "-C", "link-arg=-nostartfiles",
+    "-C", "link-arg=-Tbuild/x86_64.ld",
+]
+
+[target.aarch64-cortex-kernel]
+rustflags = [
+    "-C", "link-arg=-nostartfiles",
+    "-C", "link-arg=-Tbuild/arm64.ld",
+    "-C", "target-feature=+strict-align",
+]
+
+[target.armv7-cortex-kernel]
+rustflags = [
+    "-C", "link-arg=-nostartfiles",
+    "-C", "link-arg=-Tbuild/arm32.ld",
+    "-C", "target-feature=+thumb-mode",
+]
+
+[target.riscv64-cortex-kernel]
+rustflags = [
+    "-C", "link-arg=-nostartfiles",
+    "-C", "link-arg=-Tbuild/riscv64.ld",
+]

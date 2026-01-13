@@ -1,0 +1,26 @@
+[workspace]
+resolver = "2"
+members = [
+    "kernel",
+    "verifier",
+    "slots",
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+license = "Apache-2.0"
+
+[workspace.dependencies]
+# No external dependencies - pure Rust/ASM only
+
+[profile.release]
+opt-level = "z"      # Minimize size
+lto = true
+codegen-units = 1
+strip = true
+panic = "abort"
+
+[profile.dev]
+opt-level = "s"
+panic = "abort"
