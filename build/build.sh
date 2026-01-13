@@ -7,12 +7,14 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
 cd "$PROJECT_ROOT"
 
+# echo_color outputs MESSAGE wrapped in the ANSI color specified by COLOR.
 echo_color() {
     local color=$1
     shift
     echo -e "\033[${color}m$*\033[0m"
 }
 
+# report_size prints the size of a given binary with a colored label, or prints an error and returns 1 if the file is missing.
 report_size() {
     local binary="$1"
     local target="$2"
@@ -35,6 +37,7 @@ report_size() {
     fi
 }
 
+# build_x86_64 builds the kernel for the x86_64-cortex-kernel target in release mode and reports the resulting binary size.
 build_x86_64() {
     echo_color "32" "Building x86_64 target..."
     cargo build --target x86_64-cortex-kernel --release --bin kernel
@@ -42,6 +45,7 @@ build_x86_64() {
     echo_color "32" "x86_64 build complete."
 }
 
+# build_arm64 builds the ARM64 (AArch64) release kernel using cargo and reports the resulting binary's size.
 build_arm64() {
     echo_color "32" "Building ARM64 (AArch64) target..."
     cargo build --target aarch64-cortex-kernel --release --bin kernel
@@ -49,6 +53,7 @@ build_arm64() {
     echo_color "32" "ARM64 build complete."
 }
 
+# build_arm32 builds the ARM32 (ARMv7) release kernel and reports the resulting binary size.
 build_arm32() {
     echo_color "32" "Building ARM32 (ARMv7) target..."
     cargo build --target armv7-cortex-kernel --release --bin kernel
@@ -56,6 +61,7 @@ build_arm32() {
     echo_color "32" "ARM32 build complete."
 }
 
+# build_riscv builds the RISC-V 64 kernel target with cargo and reports the produced binary's size.
 build_riscv() {
     echo_color "32" "Building RISC-V 64 target..."
     cargo build --target riscv64-cortex-kernel --release --bin kernel
@@ -63,6 +69,7 @@ build_riscv() {
     echo_color "32" "RISC-V build complete."
 }
 
+# build_all builds all supported target binaries (x86_64, ARM64, ARM32, RISC-V) sequentially and reports size and status for each, printing a final success banner.
 build_all() {
     echo_color "35" "========================================="
     echo_color "35" "Building Cortex-μKernel (all targets)"

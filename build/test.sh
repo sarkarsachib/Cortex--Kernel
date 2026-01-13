@@ -7,6 +7,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
 cd "$PROJECT_ROOT"
 
+# echo_color prints the given message with the ANSI color code specified by the first argument.
 echo_color() {
     local color=$1
     shift
@@ -17,6 +18,7 @@ test_count=0
 pass_count=0
 fail_count=0
 
+# run_test runs a named test command, increments global test counters, and prints a colored PASS or FAIL message.
 run_test() {
     local test_name="$1"
     local test_command="$2"

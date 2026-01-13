@@ -10,6 +10,7 @@ cd "$PROJECT_ROOT"
 MAX_SIZE_KB=20
 MAX_SIZE_BYTES=$((MAX_SIZE_KB * 1024))
 
+# echo_color prints the given message(s) to stdout using the ANSI color code specified by the first argument.
 echo_color() {
     local color=$1
     shift
