@@ -1,130 +1,73 @@
 #![no_std]
 #![no_main]
-#![feature(panic_info_message)]
 
 extern crate verifier;
 extern crate slots;
 
-use core::panic::PanicInfo;
-
-// Platform-specific entry points
+/// x86_64-specific entry point
 #[cfg(target_arch = "x86_64")]
-pub mod x86_64 {
-    pub fn boot() -> ! {
-        unsafe {
-            // Minimal x86_64 boot sequence
-            core::arch::asm!(
-                "cli",           // Disable interrupts
-                "lgdt [{0}]",    // Load GDT (placeholder)
-                in(reg) 0usize,
-            );
-        }
-
-        // Simple kernel entry point
-        kernel_main();
-
-        loop {}
-    }
-}
-
-#[cfg(target_arch = "aarch64")]
-pub mod aarch64 {
-    pub fn boot() -> ! {
-        unsafe {
-            // Minimal ARM64 boot sequence
-            core::arch::asm!(
-                "mrs x0, daif",  // Get interrupt flags
-                "msr daifset, #2", // Disable IRQs
-                "msr daifset, #7", // Disable all interrupts
-            );
-        }
-
-        kernel_main();
-
-        loop {}
-    }
-}
-
-#[cfg(target_arch = "arm")]
-pub mod arm {
-    pub fn boot() -> ! {
-        unsafe {
-            // Minimal ARM32 boot sequence (Thumb mode)
-            core::arch::asm!(
-                "cpsid i",  // Disable IRQs
-            );
-        }
-
-        kernel_main();
-
-        loop {}
-    }
-}
-
-#[cfg(target_arch = "riscv64")]
-pub mod riscv64 {
-    pub fn boot() -> ! {
-        unsafe {
-            // Minimal RISC-V boot sequence
-            core::arch::asm!(
-                "csrw mstatus, {0}",  // Clear mstatus
-                "csrw mie, {0}",       // Disable interrupt enables
-                in(reg) 0u64,
-            );
-        }
-
-        kernel_main();
-
-        loop {}
-    }
-}
-
 #[no_mangle]
-#[cfg(target_arch = "x86_64")]
 pub extern "C" fn _start() -> ! {
-    x86_64::boot()
+    // Initialize the kernel
+    kernel_main()
 }
 
-#[no_mangle]
-#[cfg(target_arch = "aarch64")]
-pub extern "C" fn _start() -> ! {
-    aarch64::boot()
-}
+/// Main kernel function
+fn kernel_main() -> ! {
+    // Initialize kernel library
+    if let Err(e) = kernel::kernel_init() {
+        // If initialization fails, print error and halt
+        crate::arch::x86_64::console::println("Kernel init failed");
+        crate::arch::x86_64::console::println(e);
+        crate::arch::x86_64::power::cpu_halt();
+    }
 
-#[no_mangle]
-#[cfg(target_arch = "arm")]
-pub extern "C" fn _start() -> ! {
-    arm::boot()
-}
-
-#[no_mangle]
-#[cfg(target_arch = "riscv64")]
-pub extern "C" fn _start() -> ! {
-    riscv64::boot()
-}
-
-fn kernel_main() {
-    // Minimal kernel initialization
+    // Create verifier and slot manager
     let verifier = verifier::Verifier::new();
-    let _slots = slots::SlotManager::new();
+    let slots = slots::SlotManager::new();
 
     // Verify kernel integrity
     verifier.verify_kernel();
 
-    // Simple halt for now
-    unsafe {
-        #[cfg(target_arch = "x86_64")]
-        core::arch::asm!("hlt");
+    // Print startup message
+    crate::arch::x86_64::console::println("Cortex-μKernel x86_64 ready");
+    
+    // Enable interrupts
+    crate::arch::x86_64::idt::enable_interrupts();
 
-        #[cfg(any(target_arch = "aarch64", target_arch = "arm"))]
-        core::arch::asm!("wfi");
+    // Simple kernel loop - in a real kernel this would be the scheduler
+    kernel_loop()
+}
 
-        #[cfg(target_arch = "riscv64")]
-        core::arch::asm!("wfi");
+/// Main kernel loop
+fn kernel_loop() -> ! {
+    loop {
+        // In a real kernel, this would be:
+        // 1. Check for interrupts
+        // 2. Run scheduled tasks
+        // 3. Check for system events
+        // 4. Power management
+        
+        // For now, just halt the CPU to save power
+        unsafe {
+            core::arch::asm!("hlt");
+        }
     }
 }
 
+/// Panic handler
 #[panic_handler]
 fn panic(_info: &PanicInfo) -> ! {
-    loop {}
+    // Print panic message if console is available
+    crate::arch::x86_64::console::println("PANIC: Unknown panic");
+    
+    // Halt the system
+    crate::arch::x86_64::power::cpu_halt();
+}
+
+/// Unhandled exception handler
+#[no_mangle]
+pub extern "C" fn handle_exception() -> ! {
+    crate::arch::x86_64::console::println("Unhandled exception!");
+    crate::arch::x86_64::power::cpu_halt();
 }

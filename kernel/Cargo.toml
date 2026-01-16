@@ -18,3 +18,13 @@ lto = true
 codegen-units = 1
 strip = true
 panic = "abort"
+
+[profile.dev]
+opt-level = "z"
+lto = true
+codegen-units = 1
+strip = true
+panic = "abort"
+
+[target.x86_64-cortex-kernel.dependencies]
+# No external dependencies for x86_64 target
