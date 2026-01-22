@@ -27,11 +27,21 @@ fi
 
 echo "Starting Cortex-μKernel (x86_64) in QEMU..."
 echo "Kernel: $KERNEL_BINARY"
+echo "Output will be available via serial console"
 echo ""
 
+# Run QEMU with:
+# -kernel: Boot the kernel directly
+# -serial stdio: Connect serial port to stdout/stdin
+# -nographic: Disable graphical output
+# -m 256M: Allocate 256MB of memory
+# -smp 1: Single processor core
+# -d guest_errors: Log guest errors
 qemu-system-x86_64 \
     -kernel "$KERNEL_BINARY" \
     -serial stdio \
     -nographic \
     -m 256M \
-    -s -S
+    -smp 1 \
+    -d guest_errors \
+    -no-reboot
